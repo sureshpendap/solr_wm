@@ -108,6 +108,8 @@ import org.apache.solr.handler.ReplicationHandler;
 import org.apache.solr.handler.RequestHandlerBase;
 import org.apache.solr.handler.SolrConfigHandler;
 import org.apache.solr.handler.component.HighlightComponent;
+import org.apache.solr.handler.component.QueryComponent;
+import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.logging.MDCLoggingContext;
 import org.apache.solr.metrics.SolrCoreMetricManager;
@@ -116,6 +118,7 @@ import org.apache.solr.metrics.SolrMetricsContext;
 import org.apache.solr.pkg.*;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
+import org.apache.solr.request.SolrRequestInfo;
 import org.apache.solr.response.BinaryResponseWriter;
 import org.apache.solr.response.CSVResponseWriter;
 import org.apache.solr.response.GeoJSONResponseWriter;
@@ -2649,6 +2652,16 @@ public final class SolrCore implements SolrInfoBean, SolrMetricProducer, Closeab
     if (rsp.getToLog().size() > 0) {
       if (requestLog.isInfoEnabled()) {
         requestLog.info(rsp.getToLogAsString(logid));
+      }
+
+      if(requestLog.isWarnEnabled()) {
+        SolrRequestInfo requestInfo = SolrRequestInfo.getRequestInfo();
+        if (requestInfo != null) {
+          ResponseBuilder rb = requestInfo.getResponseBuilder();
+          if (rb != null && QueryComponent.isLivenessCheck(rb, req)) {
+            requestLog.warn(rsp.getToLogAsString(logid));
+          }
+        }
       }
 
       /* slowQueryThresholdMillis defaults to -1 in SolrConfig -- not enabled.*/
