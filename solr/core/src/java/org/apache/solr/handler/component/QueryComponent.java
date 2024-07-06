@@ -238,7 +238,7 @@ public class QueryComponent extends SearchComponent
 
     if(isLivenessCheck(rb, req)){
       if (log.isWarnEnabled()) log.warn("Zombie server's liveliness check query to be rewritten: {}", req.getParamString());
-      rb.setQuery(new MatchNoDocsQuery());
+      rb.setQuery(new MatchNoDocsQuery("*isLiveCheck*"));
     };
   }
 

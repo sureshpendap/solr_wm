@@ -72,6 +72,7 @@ import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
@@ -2658,8 +2659,13 @@ public final class SolrCore implements SolrInfoBean, SolrMetricProducer, Closeab
         SolrRequestInfo requestInfo = SolrRequestInfo.getRequestInfo();
         if (requestInfo != null) {
           ResponseBuilder rb = requestInfo.getResponseBuilder();
-          if (rb != null && QueryComponent.isLivenessCheck(rb, req)) {
-            requestLog.warn(rsp.getToLogAsString(logid));
+          if (rb != null && rb.getQuery() != null) {
+            if (rb.getQuery() instanceof MatchNoDocsQuery) {
+              MatchNoDocsQuery noDocsQuery = (MatchNoDocsQuery) rb.getQuery();
+              if(noDocsQuery.toString("").contains("*isLiveCheck*")){
+                requestLog.warn(rsp.getToLogAsString(logid));
+              }
+            }
           }
         }
       }
