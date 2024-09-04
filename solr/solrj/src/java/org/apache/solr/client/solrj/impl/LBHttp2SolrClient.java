@@ -62,6 +62,12 @@ public class LBHttp2SolrClient extends LBSolrClient {
     super(Arrays.asList(baseSolrUrls));
     this.httpClient = httpClient;
   }
+  
+  public LBHttp2SolrClient(Http2SolrClient httpClient, RequestExecutionStrategy requestExecStrategy, String... baseSolrUrls) {
+    super(requestExecStrategy, Arrays.asList(baseSolrUrls));
+    this.httpClient = httpClient;
+  }
+  
   @Override
   protected SolrClient getClient(String baseUrl) {
     return httpClient;

@@ -46,6 +46,7 @@ import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.LBHttp2SolrClient;
 import org.apache.solr.client.solrj.impl.LBSolrClient;
+import org.apache.solr.client.solrj.impl.NoSpeculativeExecutionStrategy;
 import org.apache.solr.client.solrj.routing.AffinityReplicaListTransformerFactory;
 import org.apache.solr.client.solrj.routing.ReplicaListTransformer;
 import org.apache.solr.client.solrj.routing.ReplicaListTransformerFactory;
@@ -318,7 +319,8 @@ public class HttpShardHandlerFactory extends ShardHandlerFactory implements org.
         .idleTimeout(soTimeout)
         .maxConnectionsPerHost(maxConnectionsPerHost).build();
     this.defaultClient.addListenerFactory(this.httpListenerFactory);
-    this.loadbalancer = new LBHttp2SolrClient(defaultClient);
+//    this.loadbalancer = new LBHttp2SolrClient(defaultClient);
+    this.loadbalancer = new LBHttp2SolrClient(defaultClient, new NoSpeculativeExecutionStrategy());
 
     initReplicaListTransformers(getParameter(args, "replicaRouting", null, sb));
 
@@ -378,6 +380,7 @@ public class HttpShardHandlerFactory extends ShardHandlerFactory implements org.
     }
     return new LBSolrClient.Req(req, urls, numServersToTry);
   }
+  
 
   /**
    * Creates a list of urls for the given shard.

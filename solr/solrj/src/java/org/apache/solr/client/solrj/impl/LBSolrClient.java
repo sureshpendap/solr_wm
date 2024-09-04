@@ -73,6 +73,8 @@ public abstract class LBSolrClient extends SolrClient {
 
   // changes to aliveServers are reflected in this array, no need to synchronize
   private volatile ServerWrapper[] aliveServerList = new ServerWrapper[0];
+  
+  private RequestExecutionStrategy requestExecStrategy = new NoSpeculativeExecutionStrategy();
 
 
   private volatile ScheduledExecutorService aliveCheckExecutor;
@@ -201,6 +203,17 @@ public abstract class LBSolrClient extends SolrClient {
       }
       updateAliveList();
     }
+  }
+  
+  public LBSolrClient(RequestExecutionStrategy requestExecStrategy, List<String> baseSolrUrls) {
+    if (!baseSolrUrls.isEmpty()) {
+      for (String s : baseSolrUrls) {
+        ServerWrapper wrapper = createServerWrapper(s);
+        aliveServers.put(wrapper.getBaseUrl(), wrapper);
+      }
+      updateAliveList();
+    }
+    this.requestExecStrategy = requestExecStrategy;
   }
 
   protected void updateAliveList() {
@@ -366,7 +379,13 @@ public abstract class LBSolrClient extends SolrClient {
     try {
       rsp.server = baseUrl;
       req.getRequest().setBasePath(baseUrl);
-      rsp.rsp = getClient(baseUrl).request(req.getRequest(), (String) null);
+//      rsp.rsp = getClient(baseUrl).request(req.getRequest(), (String) null);
+      if (requestExecStrategy != null) {
+        rsp.rsp = requestExecStrategy.execute(getClient(baseUrl), req.getRequest(), null, null);
+      } else {
+        rsp.rsp = getClient(baseUrl).request(req.getRequest(), (String) null);
+      }
+      
       if (isZombie) {
         zombieServers.remove(baseUrl);
       }
